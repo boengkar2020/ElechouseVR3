@@ -13,7 +13,9 @@ This guide for using Elechouse Voice Recognation with python. I recommend for us
 3. Create virtual enviroment
 
 `$ cd ElechouseVR3`
+
 `$ virtualenv -p python3 venv`
+
 `$ source venv/bin/activate`
 
 Now you can run train.py for record command voice.
