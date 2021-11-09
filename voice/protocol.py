@@ -1,3 +1,7 @@
+'''
+Created by Sukarno 
+Email : sukarnooke@gmail.com
+'''
 import time
 
 class Command:
@@ -534,7 +538,7 @@ class Voice(object):
                 if 0xaa in resp:
                     idx = resp.index(0xaa)
                     txt = ''.join([chr(c) for c in resp[2: (idx - 1)]])
-                    print(txt)
+                    print('Record {0} : {1}'.format(rec,txt))
 
                     sresp = resp[idx + 2:]
 
@@ -557,7 +561,7 @@ class Voice(object):
 
                 else:
                     txt = ''.join([chr(c) for c in resp[2:]])
-                    print(txt)
+                    print('Record {0} : {1}'.format(rec,txt))
             elif resp[0] == Command.Train:
                 i = 2
                 record = 'Record_{}',format(resp[i])
@@ -627,27 +631,28 @@ class Voice(object):
         num = resp[1]
 
         obj = {}
-
+        records = []
         for rn in range(0,num):
-
             i = (rn + 1) * 2
-
-            record = 'Record_{}'.format(resp[i])
+            r = {'record' : resp[i]}
 
             if resp[ i + 1] == 0:
-                obj[record] = 'Success'
+                r['result'] = 'Success'
             elif resp[ i + 1] == 0xff:
-                obj[record] = 'Record value out of range'
+                r['result'] = 'Record value out of range'
             elif resp[ i + 1] == 0xfe:
-                obj[record] = 'Record untrained'
+                r['result'] = 'Record untrained'
             elif resp[ i + 1] == 0xfd:
-                obj[record] = 'Recognizer full'
+                r['result'] = 'Recognizer full'
             elif resp[ i + 1] == 0xff:
-                obj[record] = 'Record already in recognizer'
+                r['result'] = 'Record already in recognizer'
             else:
-                obj[record] = 'Unknown'
+                r['result'] = 'Unknown'
+
+            records.append(r)
 
         obj['status'] = 'Ok'
+        obj['records'] = records
 
         return obj
 
@@ -670,5 +675,37 @@ class Voice(object):
             obj['status'] = 'Ok'
         else:
             obj['status'] = resp[1]
+
+        return obj
+
+    def recognize(self):
+
+        obj = {}
+        
+        while True:
+            resp = self.__read_frame()
+
+            if not resp:
+                continue
+            
+            if resp[0] != 0x0D:
+                continue
+
+            if resp[2] == 0xff:
+                obj['mode'] = 'Not in Group'
+            elif resp[2] >= 0 and resp[2] <= 0x0a:
+                obj['mode'] = 'System Group'
+            elif resp[2] >= 0x80 and resp[2] <= 0x87:
+                obj['mode'] = 'User Group'
+            else:
+                obj['mode'] = 'Unknown'
+
+            obj['record'] = resp[3]
+            obj['index'] = resp[4]
+
+            txt = ''.join([chr(c) for c in resp[6:]])
+            obj['signature'] = txt
+
+            break
 
         return obj
