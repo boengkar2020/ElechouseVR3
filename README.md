@@ -18,6 +18,10 @@ This guide for using Elechouse Voice Recognation with python. I recommend for us
 
 `$ source venv/bin/activate`
 
+4. Install pyserial
+
+`(venv) $ pip install pyserial`
+
 Now you can run train.py for record command voice.
 
 `(venv) $ python train.py -r 0 -s On /dev/ttyUSB0`
